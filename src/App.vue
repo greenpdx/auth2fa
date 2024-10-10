@@ -4,16 +4,20 @@ import HelloWorld from './components/HelloWorld.vue'
 import { userAuthStore } from '@/stores/auth'
 const uauth = userAuthStore()
 
-let auth = {}
+//let auth = {}
 
-async function authuser(evt) {
-  console.log(evt)
-  auth = evt
-  if (auth.otp_enabled) {
-    let t = uauth.auth
-    console.log(t)
-  } else {
-    console.log('bad')
+async function loginuser(user) {
+  uauth.user = user
+  let bob = {...uauth.user}
+  console.log(bob)
+  if (user.otp_enabled) {
+    if (!user.otp_verified) {
+      alert("Please enter authenticator numbers")
+      let t = user.id
+      console.log(t)
+    }
+   } else {
+    alert("F2A not enabled\nClick Generate and scan QR code")
   }
 }
 </script>
@@ -32,7 +36,7 @@ async function authuser(evt) {
     </div>
   </header>
 
-  <RouterView @authuser="authuser" />
+  <RouterView @loginuser="loginuser" />
 </template>
 
 <style scoped>
