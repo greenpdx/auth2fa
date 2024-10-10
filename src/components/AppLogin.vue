@@ -51,9 +51,9 @@ import { ref, onMounted } from 'vue'
 import axios from 'axios'
 import QRCode from 'qrcode'
 import { userAuthStore } from '@/stores/auth'
-const uauth = userAuthStore()
+const storeUser = userAuthStore()
 
-const emit = defineEmits(['authuser'])
+const emit = defineEmits(['loginuser'])
 const props = defineProps({
   //auth: {}
 })
@@ -73,7 +73,6 @@ const enlin = ref(0)
 const enreg = ref(0)
 const enabl = ref(1)
 
-const BASE_URL = 'http://10.0.42.170:8000'
 const URL_REGISTER = '/auth/register'
 const URL_LOGIN = '/auth/login'
 const URL_GENERATE = '/auth/otp/generate'
@@ -86,9 +85,12 @@ const URL_PROFILE = '/auth/profile'
 let qr = {}
 let user_data = { state: -1 }
 let auth = {}
+let host = ""
 
 onMounted(() => {
   console.log('MOUNTED', props)
+  host = window.location.protocol + "//" + window.location.hostname + ":8000"
+  console.log(host)
 })
 
 /*
@@ -104,7 +106,7 @@ async function register(evt) {
 
   let jobj = JSON.stringify({ name: name, email: email.value, password: passwd.value })
   console.log(name, jobj)
-  let url = BASE_URL + URL_REGISTER
+  let url = host + URL_REGISTER
   axios
     .post(url, jobj, {
       headers: {
@@ -126,7 +128,7 @@ async function profile(evt) {
 
   let jobj = JSON.stringify({ user_id: auth.id })
   console.log(name, jobj)
-  let url = BASE_URL + URL_PROFILE
+  let url = host + URL_PROFILE
   axios
     .post(url, jobj, {
       headers: {
@@ -134,7 +136,7 @@ async function profile(evt) {
       }
     })
     .then(function (resp) {
-      //console.log(resp)
+      console.log(resp)
       let user = resp.data.user
       console.log(user)
     })
@@ -149,7 +151,7 @@ async function login(evt) {
 
   let jobj = JSON.stringify({ email: email.value, password: passwd.value })
   console.log(jobj)
-  let url = BASE_URL + URL_LOGIN
+  let url = host + URL_LOGIN
   axios
     .post(url, jobj, {
       headers: {
@@ -167,7 +169,7 @@ async function login(evt) {
       auth = auser
       userid.value = auser.id
 
-      uauth.auth = auser
+      storeUser.user = auser
 
       if (auser.otp_enabled) {
         enver.value = 0
@@ -177,8 +179,8 @@ async function login(evt) {
       enlo.value = 0
       enlin.value = 1
       enreg.value = 1
-      emit('authuser', auser)
-      console.log('P', uauth.id)
+      emit('loginuser', auser)
+      console.log('P', auser.id, storeUser)
     })
     .catch(function (err) {
       user_data.status = -1
@@ -193,7 +195,7 @@ async function generate(evt) {
 
   let jobj = JSON.stringify({ email: email.value, user_id: auth.id })
   console.log(jobj)
-  let url = BASE_URL + URL_GENERATE
+  let url = host + URL_GENERATE
   axios
     .post(url, jobj, {
       headers: {
@@ -221,7 +223,7 @@ async function verify(evt) {
   console.log(auth.id, key.value)
 
   let jobj = JSON.stringify({ user_id: auth.id, token: key.value })
-  let url = BASE_URL + URL_VERIFY
+  let url = host + URL_VERIFY
   axios
     .post(url, jobj, {
       headers: {
@@ -251,7 +253,7 @@ async function validate(evt) {
   console.log(auth.id, key.value)
 
   let jobj = JSON.stringify({ user_id: auth.id, token: key.value })
-  let url = BASE_URL + URL_VALIDATE
+  let url = host + URL_VALIDATE
   axios
     .post(url, jobj, {
       headers: {
@@ -282,7 +284,7 @@ async function disable(evt) {
 
   let jobj = JSON.stringify({ user_id: auth.id })
   console.log(jobj)
-  let url = BASE_URL + URL_DISABLE
+  let url = host + URL_DISABLE
   axios
     .post(url, jobj, {
       headers: {
@@ -306,7 +308,9 @@ async function disable(evt) {
 async function logout() {
   let jobj = JSON.stringify({ user_id: auth.id })
   console.log(jobj)
-  let url = BASE_URL + URL_LOGOUT
+  userid.value = "Not Logged in"
+
+  let url = host + URL_LOGOUT
   axios
     .post(url, jobj, {
       headers: {
